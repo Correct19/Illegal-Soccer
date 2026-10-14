@@ -103,6 +103,7 @@ local npcsFolder = caracteres and caracteres:FindFirstChild("NPCs")
 
 local ativo = { mira = true, drible = true, fake = true }
 
+-- CRIAÇÃO DA GUI E DOS BOTÕES DE ON/OFF (CHAVES)
 local gui = Instance.new("ScreenGui")
 gui.Name = "SistemaAtacante"
 gui.ResetOnSpawn = false
@@ -620,6 +621,7 @@ RunService:BindToRenderStep("MiraChute", Enum.RenderPriority.Input.Value + 1, fu
 	end
 end)
 
+-- CRIAÇÃO DOS ELEMENTOS VISUAIS (HITBOXES / ESFERAS NO WORKSPACE)
 local pastaVisual = Instance.new("Folder")
 pastaVisual.Name = "SistemaAtacanteVisuais"
 pastaVisual.Parent = workspace
@@ -689,8 +691,7 @@ RunService:BindToRenderStep("SistemaAtacanteVisuais", Enum.RenderPriority.Input.
 	local agora = os.clock()
 	if agora - ultimoGkScan > 0.3 then
 		ultimoGkScan = agora
-		atualizaGkVisual(raiz)
-	end
+		atualizaGkVisual(raiz)	end
 	if gkVisual and gkVisual.Parent then
 		zonaGk.Transparency = GK_ZONA_TRANSP
 		zonaGk.CFrame = CFrame.new(gkVisual.Position)
@@ -788,12 +789,7 @@ local function aoTocarSom(som)
 	local minha = minhaCor()
 	local pos, parte = posicaoDoSom(som)
 	local dist, quem, fonte
-	if pos then
-		if som:IsDescendantOf(char) then
-			return
-		end
-		local modelo = parte and parte:FindFirstAncestorOfClass("Mo
-    	if pos then
+	if pos 	if pos then
 		if som:IsDescendantOf(char) then
 			return
 		end
@@ -822,7 +818,7 @@ local function aoTocarSom(som)
 		if not db or db > DISTANCIA_BOLA then
 			return
 		end
-    end
+	end
 	if agora - ultimoDrible < (DRIBLE_COOLDOWN * 0.5) then
 		return
 	end
@@ -1048,3 +1044,4 @@ RunService.Heartbeat:Connect(function(dt)
 end)
 
 log("Sistema iniciado | executor:", okVIM and "sim" or "não")
+
