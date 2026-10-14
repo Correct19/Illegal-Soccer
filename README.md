@@ -120,13 +120,11 @@ local function criarChave(chave, texto, x)
 	b.Text = texto
 	b.Visible = MOSTRAR_CHAVES
 	b.Parent = gui
-
 	local function atualizar()
 		b.BackgroundColor3 = ativo[chave] and Color3.fromRGB(40, 150, 80) or Color3.fromRGB(170, 50, 50)
 		b.BackgroundTransparency = 0.25
 	end
 	atualizar()
-
 	b.Activated:Connect(function()
 		ativo[chave] = not ativo[chave]
 		atualizar()
@@ -307,7 +305,6 @@ local function apertarDribbleMultiplo()
 		end)
 		return disparou
 	end
-
 	task.spawn(function()
 		local id = novoId()
 		marcarVirtual(botao0, DURACAO_TOQUE + 0.1)
@@ -326,7 +323,6 @@ local function deslizar(lado)
 	local id = novoId()
 	local dist = math.max(40, botao2.AbsoluteSize.X * SLIDE_ESCALA) * lado
 	marcarVirtual(botao2, SLIDE_DURACAO + 0.35)
-
 	task.spawn(function()
 		pcall(function()
 			enviarToque(id, 0, botao2, 0)
@@ -381,7 +377,6 @@ end
 local function achaGoleiro(golPos)
 	local meu = meuModelo()
 	local melhor, menor = nil, math.huge
-
 	local function avaliar(modelo)
 		if modelo == meu or modelo.Name == NOME_JOGADOR then
 			return
@@ -398,7 +393,6 @@ local function achaGoleiro(golPos)
 			end
 		end
 	end
-
 	if playersFolder then
 		for _, c in ipairs(playersFolder:GetChildren()) do
 			avaliar(c)
@@ -409,7 +403,6 @@ local function achaGoleiro(golPos)
 			avaliar(c)
 		end
 	end
-
 	if melhor and menor <= GK_MAX_DIST_GOL then
 		return melhor
 	end
@@ -423,13 +416,11 @@ local function calculaMira(raiz, bolaPos, ladoForcado)
 	end
 	local gcf, gsize = infoGol(gol)
 	local golPos = gcf.Position
-
 	local dirGol = Vector3.new(golPos.X - raiz.Position.X, 0, golPos.Z - raiz.Position.Z)
 	if dirGol.Magnitude < 0.1 then
 		return nil
 	end
 	local dirU = dirGol.Unit
-
 	local ax = Vector3.new(gcf.RightVector.X, 0, gcf.RightVector.Z)
 	local az = Vector3.new(gcf.LookVector.X, 0, gcf.LookVector.Z)
 	local eixo, largura
@@ -446,12 +437,10 @@ local function calculaMira(raiz, bolaPos, ladoForcado)
 			largura = gsize.Z
 		end
 	end
-
 	local meia = CANTO_PADRAO
 	if largura and largura >= 4 and largura <= 90 then
 		meia = (largura / 2) * MARGEM_TRAVE
 	end
-
 	local gk = achaGoleiro(golPos)
 	local gkLat = nil
 	if gk then
@@ -460,10 +449,8 @@ local function calculaMira(raiz, bolaPos, ladoForcado)
 		local tChute = distChute / VEL_CHUTE_ESTIMADA
 		gkLat += gk.AssemblyLinearVelocity:Dot(eixo) * tChute
 	end
-
 	local meuLat = (raiz.Position - golPos):Dot(eixo)
 	local pesoLonge = gk and PREFERE_TRAVE_LONGE or 1
-
 	local melhorLat, melhorScore = 0, -math.huge
 	for _, f in ipairs({ -1, -0.6, 0.6, 1 }) do
 		local sinalF = f >= 0 and 1 or -1
@@ -476,13 +463,11 @@ local function calculaMira(raiz, bolaPos, ladoForcado)
 			end
 		end
 	end
-
 	local sinal = melhorLat >= 0 and 1 or -1
 	local latAlvo = melhorLat
 	if CURVA_ATIVA then
 		latAlvo = melhorLat + sinal * CURVA_DESVIO
 	end
-
 	local ponto = golPos + eixo * latAlvo
 	return {
 		ponto = Vector3.new(ponto.X, raiz.Position.Y, ponto.Z),
@@ -535,13 +520,11 @@ local function iniciarMira()
 	if not (humanoid and raiz) or humanoid.Health <= 0 then
 		return
 	end
-
 	local bola, dist = bolaMaisProxima(raiz.Position)
 	if not bola or dist > ALCANCE_BOLA then
 		log("Sem bola dentro da zona verde, não mirou")
 		return
 	end
-
 	ladoTravado = nil
 	local info = recalcular(raiz)
 	if not info then
@@ -549,11 +532,9 @@ local function iniciarMira()
 		return
 	end
 	ladoTravado = info.lat >= 0 and 1 or -1
-
 	mirando = true
 	inicioMira = os.clock()
 	ultimoCalculo = inicioMira
-
 	local textoCurva = "sem curva"
 	if CURVA_ATIVA and os.clock() - ultimaCurva >= CURVA_COOLDOWN then
 		local direita = info.dirU:Cross(Vector3.yAxis)
@@ -569,7 +550,6 @@ local function iniciarMira()
 			textoCurva = okVIM and "ocupado" or "sem executor"
 		end
 	end
-
 	log(
 		"Mirando no", info.nomeGol,
 		"| goleiro:", info.temGk and "sim" or "não",
@@ -614,31 +594,25 @@ RunService:BindToRenderStep("MiraChute", Enum.RenderPriority.Input.Value + 1, fu
 	if not mirando then
 		return
 	end
-
 	local agora = os.clock()
 	local char = player.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local raiz = char and char:FindFirstChild("HumanoidRootPart")
-
 	if not (humanoid and raiz) or humanoid.Health <= 0 or agora > inicioMira + JANELA_MIRA then
 		pararMira()
 		return
 	end
-
 	if agora - ultimoCalculo >= RECALCULAR_A_CADA then
 		ultimoCalculo = agora
 		recalcular(raiz)
 	end
-
 	if not pontoMira then
 		return
 	end
-
 	if humanoidTravado ~= humanoid then
 		humanoid.AutoRotate = false
 		humanoidTravado = humanoid
 	end
-
 	local plano = Vector3.new(pontoMira.X - raiz.Position.X, 0, pontoMira.Z - raiz.Position.Z)
 	if plano.Magnitude > 0.1 then
 		local alvoCF = CFrame.lookAt(raiz.Position, raiz.Position + plano)
@@ -704,7 +678,6 @@ RunService:BindToRenderStep("SistemaAtacanteVisuais", Enum.RenderPriority.Input.
 	local char = player.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local raiz = char and char:FindFirstChild("HumanoidRootPart")
-
 	if modoGoleiro or not (humanoid and raiz) or humanoid.Health <= 0 then
 		zonaCerteza.Transparency = 1
 		zonaGk.Transparency = 1
@@ -712,22 +685,18 @@ RunService:BindToRenderStep("SistemaAtacanteVisuais", Enum.RenderPriority.Input.
 		marcador.Transparency = 1
 		return
 	end
-
 	zonaCerteza.CFrame = CFrame.new(raiz.Position)
-
 	local agora = os.clock()
 	if agora - ultimoGkScan > 0.3 then
 		ultimoGkScan = agora
 		atualizaGkVisual(raiz)
 	end
-
 	if gkVisual and gkVisual.Parent then
 		zonaGk.Transparency = GK_ZONA_TRANSP
 		zonaGk.CFrame = CFrame.new(gkVisual.Position)
 	else
 		zonaGk.Transparency = 1
 	end
-
 	local bola, dist = bolaMaisProxima(raiz.Position)
 	if bola then
 		noBola.Transparency = BOLA_TRANSP
@@ -737,7 +706,6 @@ RunService:BindToRenderStep("SistemaAtacanteVisuais", Enum.RenderPriority.Input.
 		noBola.Transparency = 1
 		zonaCerteza.Transparency = CERTEZA_TRANSP
 	end
-
 	if mirando and pontoMira then
 		marcador.Transparency = 0.2
 		marcador.CFrame = CFrame.new(pontoMira)
@@ -758,7 +726,6 @@ local function adversarioMaisPerto(raiz)
 	local meu = meuModelo()
 	local minha = minhaCor()
 	local melhor, menor = nil, math.huge
-
 	local function avaliar(modelo)
 		if modelo == meu or modelo.Name == NOME_JOGADOR then
 			return
@@ -776,7 +743,6 @@ local function adversarioMaisPerto(raiz)
 			melhor = modelo
 		end
 	end
-
 	if playersFolder then
 		for _, c in ipairs(playersFolder:GetChildren()) do
 			avaliar(c)
@@ -810,22 +776,18 @@ local function aoTocarSom(som)
 		return
 	end
 	ultimoSom = agora
-
 	if not ativo.drible or fakeAtivo or modoGoleiro then
 		return
 	end
-
 	local char = player.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local raiz = char and char:FindFirstChild("HumanoidRootPart")
 	if not (humanoid and raiz) or humanoid.Health <= 0 then
 		return
 	end
-
 	local minha = minhaCor()
 	local pos, parte = posicaoDoSom(som)
 	local dist, quem, fonte
-
 	if pos then
 		if som:IsDescendantOf(char) then
 			return
@@ -851,25 +813,20 @@ local function aoTocarSom(som)
 		quem = modelo.Name
 		fonte = "adversário mais perto"
 	end
-
 	local resumo = string.format("%s | %s a %.1f studs (%s)", som.Name, quem, dist, fonte)
-
 	if dist > DISTANCIA_TACKLE then
 		return
 	end
-
 	if SO_COM_BOLA then
 		local _, db = bolaMaisProxima(raiz.Position)
 		if not db or db > DISTANCIA_BOLA then
 			return
 		end
-	end
-
+    end
 	if agora - ultimoDrible < (DRIBLE_COOLDOWN * 0.5) then
 		return
 	end
 	ultimoDrible = agora
-
 	task.delay(ATRASO_CLIQUE, function()
 		apertarDribbleMultiplo()
 		log("DRIBLE AUTOMÁTICO DISPARADO!", resumo)
@@ -886,7 +843,6 @@ local function ligarSom(obj)
 		return
 	end
 	ligados[obj] = true
-
 	obj.Played:Connect(function()
 		aoTocarSom(obj)
 	end)
@@ -930,7 +886,6 @@ end)
 local function avaliaPressao(raiz, dirGol, minha)
 	local meu = meuModelo()
 	local score, perto, maisPerto = 0, 0, math.huge
-
 	local function avaliar(modelo)
 		if modelo == meu or modelo.Name == NOME_JOGADOR then
 			return
@@ -939,7 +894,6 @@ local function avaliaPressao(raiz, dirGol, minha)
 		if not r then
 			return
 		end
-
 		local h = achaHandle(modelo)
 		if h and h:IsA("BasePart") then
 			local cor = h.Color
@@ -952,27 +906,22 @@ local function avaliaPressao(raiz, dirGol, minha)
 		elseif not CONTAR_SEM_CAMISA then
 			return
 		end
-
 		local rel = r.Position - raiz.Position
 		local relH = Vector3.new(rel.X, 0, rel.Z)
 		local d = math.max(relH.Magnitude, 0.01)
 		if d > RAIO_PRESSAO then
 			return
 		end
-
 		local w = (1 - d / RAIO_PRESSAO) ^ 2
-
 		local vel = r.AssemblyLinearVelocity
 		local vH = Vector3.new(vel.X, 0, vel.Z)
 		local paraMim = -relH / d
 		local fechando = math.clamp(vH:Dot(paraMim) / 16, 0, 1)
 		w *= 1 + 0.5 * fechando
-
 		if dirGol then
 			local frente = math.clamp((relH / d):Dot(dirGol), 0, 1)
 			w *= 0.7 + 0.3 * frente
 		end
-
 		score += w
 		if d <= RAIO_PRESSAO / 2 then
 			perto += 1
@@ -981,7 +930,6 @@ local function avaliaPressao(raiz, dirGol, minha)
 			maisPerto = d
 		end
 	end
-
 	if playersFolder then
 		for _, c in ipairs(playersFolder:GetChildren()) do
 			avaliar(c)
@@ -992,7 +940,6 @@ local function avaliaPressao(raiz, dirGol, minha)
 			avaliar(c)
 		end
 	end
-
 	return score, perto, maisPerto
 end
 
@@ -1006,16 +953,12 @@ local function fakeShot(resumo)
 		logLento("semvim", "VirtualInputManager indisponível: o fake shot só funciona no executor")
 		return
 	end
-
 	fakeAtivo = true
 	gestoAtivo = true
 	ultimoFake = os.clock()
-
 	local idChute = novoId()
 	marcarVirtual(botao2, FAKE_SEGURAR + 2 * ANTECEDENCIA + DURACAO_TOQUE + SOLTAR_CHUTE_DEPOIS + 0.4)
-
 	log("FAKE SHOT!", resumo)
-
 	task.spawn(function()
 		local ok, err = pcall(function()
 			enviarToque(idChute, 0, botao2)
@@ -1045,12 +988,10 @@ RunService.Heartbeat:Connect(function(dt)
 		return
 	end
 	acumulador = 0
-
 	if not ativo.fake or fakeAtivo or gestoAtivo or modoGoleiro then
 		confirmacoes = 0
 		return
 	end
-
 	local char = player.Character
 	local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 	local raiz = char and char:FindFirstChild("HumanoidRootPart")
@@ -1058,20 +999,17 @@ RunService.Heartbeat:Connect(function(dt)
 		confirmacoes = 0
 		return
 	end
-
 	local _, db = bolaMaisProxima(raiz.Position)
 	if not db or db > BOLA_PERTO then
 		confirmacoes = 0
 		return
 	end
-
 	local minha = minhaCor()
 	if not minha then
 		logLento("semcor", "Camisa não encontrada: não consigo diferenciar os times")
 		confirmacoes = 0
 		return
 	end
-
 	local dirGol = nil
 	local gol = escolheGol(raiz)
 	if gol then
@@ -1086,20 +1024,16 @@ RunService.Heartbeat:Connect(function(dt)
 			return
 		end
 	end
-
 	local pressao, perto, mais = avaliaPressao(raiz, dirGol, minha)
 	local resumo = string.format("pressão %.2f | adversários perto %d | mais perto %.1f", pressao, perto, mais == math.huge and 0 or mais)
-
 	if pressao > PRESSAO_MIN * 0.5 then
 		logLento("pressao", resumo)
 	end
-
 	if pressao >= PRESSAO_MIN then
 		confirmacoes += 1
 	else
 		confirmacoes = 0
 	end
-
 	if confirmacoes >= CONFIRMAR then
 		if usuarioOcupado() then
 			logLento("ocupado", "Você está nos botões, fake shot pausado")
